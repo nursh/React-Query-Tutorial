@@ -1,33 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { PostData, QueryError } from './types';
 
-function App() {
-  const [count, setCount] = useState(0)
+
+
+function fetchPost(postId: number) {
+  return fetch(`https://jsonplaceholder.typicode.com/posts/${postId}`)
+    .then(response => response.json());
+}
+
+type PostProps = {
+  postId: number;
+}
+
+function Post({ postId }: PostProps) {
+  const postQuery = useQuery<PostData, QueryError>([postId], () => fetchPost(postId));
+  console.log(postQuery);
+  const post = postQuery.data;
+
+  if (postQuery.isLoading) {
+    return <p>Loading...</p>
+  }
+
+  if (postQuery.isError) {
+    return <p>Something went wrong... {postQuery.error.message}</p>
+  }
+
+  if (post) {
+    return (
+      <>
+        <h2>{post.title}</h2>
+        <p>{post.body}</p>
+      </>
+    )
+  }
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    <>Post with id: {postId} does not exist</>
+  )
+}
+
+function App() {
+  return (
+    <Post
+      postId={101}
+    />
   )
 }
 
