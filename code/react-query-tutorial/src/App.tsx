@@ -43,7 +43,7 @@ function Post({ postId }: PostProps) {
 function App() {
   return (
     <Post
-      postId={101}
+      postId={10}
     />
   )
 }
