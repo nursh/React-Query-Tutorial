@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { IssueItem } from "./IssueItem";
 
 export default function IssuesList({ labels, status }) {
@@ -9,6 +9,8 @@ export default function IssuesList({ labels, status }) {
     return fetch(`/api/issues?${labelsString}${statusString}`).then((res) =>
       res.json()
     );
+  }, {
+    staleTime: 1000 * 60
   });
 
   const [searchValue, setSearchValue] = useState("");
