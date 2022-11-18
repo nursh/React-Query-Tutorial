@@ -1,22 +1,26 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { IssueItem } from "./IssueItem";
+import fetchWithError from "../helpers/fetchWithError";
 
 export default function IssuesList({ labels, status }) {
-  const issuesQuery = useQuery(["issues", { labels, status }], () => {
-    const statusString = status ? `&status=${status}` : "";
-    const labelsString = labels.map((label) => `labels[]=${label}`).join("&");
-    return fetch(`/api/issues?${labelsString}${statusString}`).then((res) =>
-      res.json()
-    );
-  }, {
-    staleTime: 1000 * 60
-  });
+  const issuesQuery = useQuery(
+    ["issues", { labels, status }],
+    () => {
+      const statusString = status ? `&status=${status}` : "";
+      const labelsString = labels.map((label) => `labels[]=${label}`).join("&");
+      return fetchWithError(`/api/issues?${labelsString}${statusString}`);
+    },
+    {
+      staleTime: 1000 * 60,
+    }
+  );
 
   const [searchValue, setSearchValue] = useState("");
   const searchQuery = useQuery(
     ["issues", "search", searchValue],
-    () => fetch(`/api/search/issues?q=${searchValue}`).then(res => res.json()),
+    () =>
+      fetch(`/api/search/issues?q=${searchValue}`).then((res) => res.json()),
     { enabled: searchValue.length > 0 }
   );
   return (
@@ -43,8 +47,10 @@ export default function IssuesList({ labels, status }) {
       <h2>Issues List</h2>
       {issuesQuery.isLoading ? (
         <p>Loading...</p>
-      ) : searchQuery.fetchStatus === "idle" && searchQuery.isLoading === true ?
-      (
+      ) : issuesQuery.isError ? (
+        <p>{issuesQuery.error.message}</p>
+      ) : searchQuery.fetchStatus === "idle" &&
+        searchQuery.isLoading === true ? (
         <ul className="issues-list">
           {issuesQuery.data.map((issue) => (
             <IssueItem
@@ -63,8 +69,9 @@ export default function IssuesList({ labels, status }) {
       ) : (
         <>
           <h2>Search Results</h2>
-          {searchQuery.isLoading ? (<p>Loading...</p>) :
-          (
+          {searchQuery.isLoading ? (
+            <p>Loading...</p>
+          ) : (
             <>
               <p>{searchQuery.data.count} Results</p>
               <ul className="issues-list">
