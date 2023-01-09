@@ -10,7 +10,7 @@ function IssueAssignment({ assignee, issueNumber }) {
 
   const usersQuery = useQuery(["users"], () => fetch('/api/users').then(res => res.json()))
   const setAssignment = useMutation((assignee) => {
-    fetch(`/api/issues/${issueNumber}`, {
+    return fetch(`/api/issues/${issueNumber}`, {
       method: 'PUT',
       headers: {
         "content-type": "application/json"
